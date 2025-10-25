@@ -23,30 +23,15 @@ from metta.investment_rag import SolanaPortfolioRAG
 from metta.knowledge import initialize_solana_knowledge
 from metta.utils import LLM, process_chat_query, process_trading_data
 
+# Import shared message models
+from models import PriceRequest, TradeSignal, PriceResponse
+
 load_dotenv()
 
-agent = Agent(name="Solana Portfolio Analyzer", port=8008, mailbox=True, publish_agent_details=True)
+agent = Agent(name="fiatrouter-icm", port=8008, mailbox=True, publish_agent_details=True)
 
 # CoinGecko agent address
 COINGECKO_AGENT = "agent1qfkgrw7tayq4ng6tpx5azhvxmm3aeug3uf9sm78erm7zp4jk4p26jyms85a"
-
-# Trading message models (for agent-to-agent communication)
-class PriceRequest(Model):
-    token: str
-    current_price: float
-    entry_price: float
-    historical_prices: list
-    current_holdings: float
-
-class TradeSignal(Model):
-    signal: str
-    percent: float
-
-# Price response model to handle CoinGecko responses
-class PriceResponse(Model):
-    token: str
-    price: float
-    timestamp: str
 
 def create_text_chat(text: str, end_session: bool = False) -> ChatMessage:
     content = [TextContent(type="text", text=text)]
