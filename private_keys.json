@@ -1,6 +1,11 @@
 {
-    "fiatrouter-icm": {
-        "identity_key": "c7fb84c933c2bd03c557e2726ed4aa037592a92b6f0333b59525a8c61de29b89",
-        "wallet_key": "6vsPC1iTXOcPuCwIBIdF9/SwEV/BbWV1J30eAvFsgCA="
-    }
+  "fiatrouter-icm": {
+    "identity_key": "c7fb84c933c2bd03c557e2726ed4aa037592a92b6f0333b59525a8c61de29b89",
+    "wallet_key": "6vsPC1iTXOcPuCwIBIdF9/SwEV/BbWV1J30eAvFsgCA="
+  },
+  "client-test": {
+    "identity_key": "4e21f4f537d4aa619ab1f1b9d93b3a92c56718b1f7113028a028ae42bf99a766",
+    "address": "agent1qd5aft6e8qh7ds74v99a2wfwdelnz93m7x8afjxhcxk6qmm3lkm9zd8t0m9",
+    "name": "Test Client Agent"
+  }
 }

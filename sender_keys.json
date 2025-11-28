@@ -1,0 +1,9 @@
+{
+    "fiatrouter-icm": {
+        "identity_key": "c7fb84c933c2bd03c557e2726ed4aa037592a92b6f0333b59525a8c61de29b89",
+        "wallet_key": "6vsPC1iTXOcPuCwIBIdF9/SwEV/BbWV1J30eAvFsgCA="
+    },
+    "test-agent-1": {
+        "identity_key": "d4a6b8c2e9f0134578ab9cde01234567abcdef0123456789abcdef0123456789"
+    }
+}

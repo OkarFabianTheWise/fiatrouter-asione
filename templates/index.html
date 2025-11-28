@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASI:One Agent Query Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .main-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .query-section {
+            margin-bottom: 30px;
+        }
+
+        .query-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .query-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        .query-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+            padding: 12px 20px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator.sending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-indicator.acknowledged {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-indicator.complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .response-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .response-section.active {
+            display: block;
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .response-header h3 {
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .response-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: #333;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .example-queries {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .example-queries h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .example-query {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .example-query:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 ASI:One Agent Interface</h1>
+            <p>Powered by Fetch.ai | Real-time Financial Intelligence & Portfolio Analysis</p>
+            <div id="agentStatus" style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 0.85em; color: #666;"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="query-section">
+                <label for="queryInput">Enter Your Query:</label>
+                <textarea 
+                    id="queryInput" 
+                    class="query-input" 
+                    placeholder="Ask about crypto investments, portfolio analysis, or market insights...&#10;&#10;Example: 'I bought 3 SOL at $20, should I sell and buy ETH?'"
+                ></textarea>
+            </div>
+
+            <div class="button-group">
+                <button id="sendBtn" class="btn btn-primary">Send Query</button>
+                <button id="clearBtn" class="btn btn-secondary">Clear</button>
+            </div>
+
+            <div id="statusContainer"></div>
+
+            <div id="responseSection" class="response-section">
+                <div class="response-header">
+                    <h3>Agent Response:</h3>
+                </div>
+                <div id="responseContent" class="response-content"></div>
+            </div>
+
+            <div class="example-queries">
+                <h4>💡 Example Queries:</h4>
+                <div class="example-query" onclick="setQuery('I bought 3 SOL at $20, should I sell and buy ETH?')">
+                    I bought 3 SOL at $20, should I sell and buy ETH?
+                </div>
+                <div class="example-query" onclick="setQuery('What are the current trends in DeFi investments?')">
+                    What are the current trends in DeFi investments?
+                </div>
+                <div class="example-query" onclick="setQuery('Should I diversify my crypto portfolio with stablecoins?')">
+                    Should I diversify my crypto portfolio with stablecoins?
+                </div>
+                <div class="example-query" onclick="setQuery('What is the best strategy for long-term crypto holdings?')">
+                    What is the best strategy for long-term crypto holdings?
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMessageId = null;
+        let pollInterval = null;
+
+        const queryInput = document.getElementById('queryInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusContainer = document.getElementById('statusContainer');
+        const responseSection = document.getElementById('responseSection');
+        const responseContent = document.getElementById('responseContent');
+        const agentStatus = document.getElementById('agentStatus');
+
+        // Load agent status on page load
+        async function loadAgentStatus() {
+            try {
+                const response = await fetch('/agent_status');
+                const data = await response.json();
+                agentStatus.innerHTML = `
+                    <strong>Agent Status:</strong> Connected<br>
+                    <strong>Your Agent:</strong> ${data.agent_address.substring(0, 20)}...<br>
+                    <strong>Target Agent:</strong> ${data.target_address.substring(0, 20)}...
+                `;
+            } catch (error) {
+                agentStatus.innerHTML = '<strong>Agent Status:</strong> <span style="color: red;">Disconnected</span>';
+            }
+        }
+
+        loadAgentStatus();
+        setInterval(loadAgentStatus, 10000); // Refresh every 10 seconds
+
+        function setQuery(query) {
+            queryInput.value = query;
+            queryInput.focus();
+        }
+
+        function showStatus(status, message) {
+            const statusMap = {
+                sending: { icon: '<div class="spinner"></div>', text: 'Sending query to agent...' },
+                sent: { icon: '<div class="spinner"></div>', text: 'Query sent, waiting for acknowledgement...' },
+                acknowledged: { icon: '⏳', text: 'Agent received query, processing...' },
+                complete: { icon: '✓', text: 'Response received!' }
+            };
+
+            const info = statusMap[status] || statusMap.sending;
+            statusContainer.innerHTML = `
+                <div class="status-indicator ${status}">
+                    ${info.icon}
+                    <span>${info.text}</span>
+                </div>
+            `;
+        }
+
+        function pollForResponse(messageId) {
+            let pollCount = 0;
+            pollInterval = setInterval(async () => {
+                pollCount++;
+                try {
+                    const response = await fetch(`/get_response/${messageId}`);
+                    const data = await response.json();
+
+                    console.log(`Poll ${pollCount}: Status = ${data.status}`);
+
+                    if (data.status === 'sent') {
+                        showStatus('sent');
+                    } else if (data.status === 'acknowledged') {
+                        showStatus('acknowledged');
+                    } else if (data.status === 'complete' && data.text) {
+                        showStatus('complete');
+                        clearInterval(pollInterval);
+                        
+                        responseContent.textContent = data.text;
+                        responseSection.classList.add('active');
+                        sendBtn.disabled = false;
+                    }
+
+                    // Timeout after 60 seconds
+                    if (pollCount > 60) {
+                        clearInterval(pollInterval);
+                        statusContainer.innerHTML = '<div class="status-indicator" style="background: #f8d7da; color: #721c24;">⚠️ Timeout: No response received</div>';
+                        sendBtn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error polling for response:', error);
+                }
+            }, 1000);
+        }
+
+        sendBtn.addEventListener('click', async () => {
+            const query = queryInput.value.trim();
+            
+            if (!query) {
+                alert('Please enter a query!');
+                return;
+            }
+
+            sendBtn.disabled = true;
+            responseSection.classList.remove('active');
+            showStatus('sending');
+
+            try {
+                const response = await fetch('/send_query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+                currentMessageId = data.message_id;
+                console.log('Message queued:', currentMessageId);
+
+                if (pollInterval) {
+                    clearInterval(pollInterval);
+                }
+
+                pollForResponse(currentMessageId);
+
+            } catch (error) {
+                console.error('Error sending query:', error);
+                alert('Error sending query. Please try again.');
+                sendBtn.disabled = false;
+                statusContainer.innerHTML = '';
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            queryInput.value = '';
+            responseSection.classList.remove('active');
+            statusContainer.innerHTML = '';
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            sendBtn.disabled = false;
+        });
+
+        queryInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
