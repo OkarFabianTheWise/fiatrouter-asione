@@ -71,4 +71,4 @@ RUN pip install --no-cache-dir \
     yarl==1.22.0
 
 # Your app's start command
-CMD ["python", "app.py"]
+CMD ["python", "agent.py"]

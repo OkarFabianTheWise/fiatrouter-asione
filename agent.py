@@ -30,7 +30,7 @@ load_dotenv()
 
 # Get the Heroku app URL from environment variable
 # HEROKU_URL = os.getenv("HEROKU_URL", "https://c8f44c24cbc8.ngrok-free.app")
-HEROKU_URL = "https://solana-portfolio-analyser.onrender.com"
+HEROKU_URL = "https://icmagent.onrender.com"
 
 agent = Agent(
     name="fiatrouter-icm", 
