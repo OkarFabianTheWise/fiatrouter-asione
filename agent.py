@@ -88,20 +88,42 @@ def extract_token_from_query(query: str) -> str:
             if token.lower() in ignore_words:
                 continue
             
-            # Handle common token mappings
-            token_mappings = {
-                "SOLANA": "SOL",
-                "BITCOIN": "BTC", 
-                "ETHEREUM": "ETH",
-                "PEPE": "PEPE",
-                "CARDANO": "ADA",
-                "POLYGON": "MATIC",
-                "AVALANCHE": "AVAX",
-                "CHAINLINK": "LINK",
-                "UNISWAP": "UNI",
-                "RAYDIUM": "RAY"
-            }
-            return token_mappings.get(token, token)
+            # Try to resolve canonical ticker using RAG knowledge first
+            try:
+                # If RAG knows this as a protocol name (e.g., 'raydium' -> 'RAY'), prefer it
+                possible = rag.get_protocol_token(token.lower())
+                if possible:
+                    return possible[0].upper()
+            except Exception:
+                # Fall through to LLM if RAG lookup fails
+                pass
+
+            # Use the LLM to map natural language token names to canonical tickers.
+            # Prompt is intentionally strict — we only want a short ticker back.
+            try:
+                prompt = (
+                    f"You're given the extracted word: '{token}'. "
+                    "Return ONLY the canonical uppercase ticker/symbol for this cryptocurrency (e.g., SOL for Solana, BTC for Bitcoin). "
+                    "If the word already appears to be a ticker (1-5 letters), return it unchanged. If unknown, return the original word."
+                )
+                llm_response = llm.create_completion(prompt, max_tokens=10)
+                m = re.search(r"[A-Za-z]{1,5}", llm_response)
+                if m:
+                    symbol = m.group(0).upper()
+                    # Double-check with RAG quickly — if rag knows this symbol, accept it
+                    try:
+                        if rag.get_token_category(symbol):
+                            return symbol
+                    except Exception:
+                        # If RAG check errors, still return symbol as it's better than nothing
+                        return symbol
+                    return symbol
+            except Exception:
+                # If LLM lookup fails for any reason, fall back to the extracted token
+                pass
+
+            # Fallback: return the extracted token as-is
+            return token
     
     return None
 
