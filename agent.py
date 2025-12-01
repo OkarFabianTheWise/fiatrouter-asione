@@ -30,14 +30,14 @@ load_dotenv()
 
 # Get the Heroku app URL from environment variable
 # HEROKU_URL = os.getenv("HEROKU_URL", "https://c8f44c24cbc8.ngrok-free.app")
-HEROKU_URL = "https://icmagent.onrender.com"
+SERVER_URL = "https://fiatrouter-asione.onrender.com"
 
 agent = Agent(
     name="fiatrouter-icm", 
     port=int(os.getenv("PORT", 5000)), 
     mailbox=False,  # Disable mailbox for Heroku deployment
     publish_agent_details=True,
-    endpoint=[f"{HEROKU_URL}/submit"]
+    endpoint=[f"{SERVER_URL}/submit"]
 )
 
 # CoinGecko agent address
